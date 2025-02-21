@@ -1,0 +1,5 @@
+*.h5
+*.keras
+env
+.DS_Store
+glove.6B.100d.txt
