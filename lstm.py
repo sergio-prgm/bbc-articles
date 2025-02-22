@@ -241,13 +241,32 @@ max_index = min(2000, len(articles))
 # Choose 2 random indices from 0 to max_index
 random_indices = random.sample(range(max_index), 2)
 
-for article_idx in random_indices:
-    sim_scores = similarity_matrix[article_idx].copy()
-    sim_scores[article_idx] = -1  # Exclude self from similarity search
-    top5_idx = np.argsort(sim_scores)[-3:][::-1]
-    print(f"\n[Step 6] Top 5 similar articles for article {article_idx} {articles[article_idx]}:")
-    for idx in top5_idx:
-        print(f"Article {idx}: {articles[idx]}")
+# Define your test indices (modify these as needed)
+test_indices = [1068, 247, 1778, 1782, 1332]
+top_n = 3
+
+with open("lstm_test_results.txt", "w", encoding="utf-8") as f:
+    for i, idx in enumerate(test_indices, 1):
+        # Exclude the test article itself by setting its similarity score to -1
+        sim_scores = similarity_matrix[idx].copy()
+        sim_scores[idx] = -1  
+        
+        # Get indices for the top-3 similar articles
+        top_indices = np.argsort(sim_scores)[-top_n:][::-1]
+        
+        # Build the output text
+        output_text = f"--- Test {i} ---\n"
+        output_text += f"Test Article Index: {idx}\n"
+        output_text += f"Test Article:\n{articles[idx]}\n\n"
+        output_text += "Top 3 Similar Articles:\n"
+        for rank, sim_idx in enumerate(top_indices, 1):
+            output_text += f"{rank}. Article Index {sim_idx}:\n{articles[sim_idx]}\n\n"
+        output_text += "\n" + ("-" * 80) + "\n\n"
+        
+        # Write the output to the file and print it to the console
+        f.write(output_text)
+        print(output_text)
+
 
 # Plot a heatmap for a subset of articles (first 50) to visualize similarity
 subset_size = 50
