@@ -22,6 +22,7 @@ from tensorflow.keras.layers import Embedding, LSTM, Dense, Dropout, Bidirection
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from sklearn.metrics import confusion_matrix
 import kagglehub
+import gensim.downloader as api  # NEW: Import gensim downloader
 
 # -------------------------------
 # Step 1: Dataset Download and Loading
@@ -92,16 +93,13 @@ Y_categorical = to_categorical(Y, num_classes=3)
 # -------------------------------
 # Step 5: Load Pre-trained GloVe Embeddings and Build Embedding Matrix
 # -------------------------------
-embedding_dim = 100
-glove_path = 'glove.6B.100d.txt'
-embeddings_index = {}
+# NEW: Load pre-trained GloVe embeddings using gensim
+embedding_model = api.load('glove-wiki-gigaword-50')
+embedding_dim = 50
+print(f"[Step 2] Pre-trained GloVe embeddings (dim={embedding_dim}) loaded.")
 
-with open(glove_path, 'r', encoding='utf8') as f:
-    for line in f:
-        values = line.split()
-        word = values[0]
-        coefs = np.asarray(values[1:], dtype='float32')
-        embeddings_index[word] = coefs
+# Build embeddings index from the loaded model
+embeddings_index = {word: embedding_model[word] for word in embedding_model.index_to_key}
 
 word_index = tokenizer.word_index
 embedding_matrix = np.zeros((len(word_index) + 1, embedding_dim))
