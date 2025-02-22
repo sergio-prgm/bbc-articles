@@ -26,7 +26,6 @@ import kagglehub
 # -------------------------------
 # Dataset Download and Loading
 # -------------------------------
-
 # Download latest version of the dataset
 path = kagglehub.dataset_download("amunsentom/article-dataset-2")
 print("Path to dataset files:", path)
@@ -43,7 +42,6 @@ else:
 # -------------------------------
 # Sentiment Labeling using VADER
 # -------------------------------
-
 nltk.download('vader_lexicon')
 sia = SentimentIntensityAnalyzer()
 
@@ -79,7 +77,6 @@ print("Computed class weights:", class_weights)
 # -------------------------------
 # Tokenization and Padding
 # -------------------------------
-
 max_words = 20000  # Maximum vocabulary size
 tokenizer = Tokenizer(num_words=max_words)
 tokenizer.fit_on_texts(X)
@@ -96,7 +93,7 @@ Y_categorical = to_categorical(Y, num_classes=3)
 # Load Pre-trained GloVe Embeddings and Build Embedding Matrix
 # -------------------------------
 embedding_dim = 100
-glove_path = 'glove.6B.100d.txt'  # Ensure this file is in your working directory
+glove_path = 'glove.6B.100d.txt'
 embeddings_index = {}
 
 with open(glove_path, 'r', encoding='utf8') as f:
@@ -116,7 +113,6 @@ for word, i in word_index.items():
 # -------------------------------
 # Word Embeddings Visualization using t-SNE
 # -------------------------------
-
 words = list(embeddings_index.keys())[:100]  # Pick first 100 words
 word_vectors = np.array([embeddings_index[w] for w in words])
 
@@ -133,7 +129,6 @@ plt.show()
 # -------------------------------
 # Define the LSTM Model
 # -------------------------------
-
 model = Sequential([
     Embedding(input_dim=len(word_index) + 1,
               output_dim=embedding_dim,
@@ -151,11 +146,9 @@ model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accur
 model.summary()
 
 # -------------------------------
-# Train the Model with Early Stopping & Class Weights
+# Train the Model with Class Weights
 # -------------------------------
-
-early_stop = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
-epochs = 50  # You can adjust the number of epochs as needed
+epochs = 50
 lr_reduce = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, verbose=1)
 
 history = model.fit(X_pad, Y_categorical, epochs=epochs, batch_size=32,
@@ -164,7 +157,6 @@ history = model.fit(X_pad, Y_categorical, epochs=epochs, batch_size=32,
 # -------------------------------
 # Plot Training History
 # -------------------------------
-
 plt.figure(figsize=(12, 5))
 
 # Plot Loss
