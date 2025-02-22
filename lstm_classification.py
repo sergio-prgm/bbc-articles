@@ -24,7 +24,7 @@ from sklearn.metrics import confusion_matrix
 import kagglehub
 
 # -------------------------------
-# Dataset Download and Loading
+# Step 1: Dataset Download and Loading
 # -------------------------------
 # Download latest version of the dataset
 path = kagglehub.dataset_download("amunsentom/article-dataset-2")
@@ -40,7 +40,7 @@ else:
     raise FileNotFoundError("No CSV files found in the downloaded folder.")
 
 # -------------------------------
-# Sentiment Labeling using VADER
+# Step 2: Sentiment Labeling using VADER
 # -------------------------------
 nltk.download('vader_lexicon')
 sia = SentimentIntensityAnalyzer()
@@ -61,7 +61,7 @@ print("Sentiment distribution (VADER):")
 print(df['sentiment'].value_counts())
 
 # -------------------------------
-# Use Original Dataset & Compute Class Weights
+# Step 3: Use Original Dataset & Compute Class Weights
 # -------------------------------
 # Use the entire dataset rather than aggressively balancing it.
 X = df['text'].astype(str).values
@@ -75,7 +75,7 @@ class_weights = {i: weight for i, weight in enumerate(class_weights_array)}
 print("Computed class weights:", class_weights)
 
 # -------------------------------
-# Tokenization and Padding
+# Step 4: Tokenization and Padding
 # -------------------------------
 max_words = 20000  # Maximum vocabulary size
 tokenizer = Tokenizer(num_words=max_words)
@@ -90,7 +90,7 @@ X_pad = pad_sequences(X_seq, maxlen=maxlen, padding='post', truncating='post')
 Y_categorical = to_categorical(Y, num_classes=3)
 
 # -------------------------------
-# Load Pre-trained GloVe Embeddings and Build Embedding Matrix
+# Step 5: Load Pre-trained GloVe Embeddings and Build Embedding Matrix
 # -------------------------------
 embedding_dim = 100
 glove_path = 'glove.6B.100d.txt'
@@ -111,7 +111,7 @@ for word, i in word_index.items():
         embedding_matrix[i] = embedding_vector
 
 # -------------------------------
-# Word Embeddings Visualization using t-SNE
+# Step 6: Word Embeddings Visualization using t-SNE
 # -------------------------------
 words = list(embeddings_index.keys())[:100]  # Pick first 100 words
 word_vectors = np.array([embeddings_index[w] for w in words])
@@ -127,7 +127,7 @@ plt.title('Word Embeddings Visualization (t-SNE)')
 plt.show()
 
 # -------------------------------
-# Define the LSTM Model
+# Step 7: Define the LSTM Model
 # -------------------------------
 model = Sequential([
     Embedding(input_dim=len(word_index) + 1,
@@ -146,7 +146,7 @@ model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accur
 model.summary()
 
 # -------------------------------
-# Train the Model with Class Weights
+# Step 8: Train the Model with Class Weights
 # -------------------------------
 epochs = 50
 lr_reduce = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, verbose=1)
@@ -155,7 +155,7 @@ history = model.fit(X_pad, Y_categorical, epochs=epochs, batch_size=32,
                     validation_split=0.2, class_weight=class_weights, callbacks=[lr_reduce])
 
 # -------------------------------
-# Plot Training History
+# Step 9: Plot Training History
 # -------------------------------
 plt.figure(figsize=(12, 5))
 
@@ -179,7 +179,7 @@ plt.title('Model Accuracy')
 plt.show()
 
 # -------------------------------
-# Evaluate the Model and Show Confusion Matrix
+# Step 10: Evaluate the Model and Show Confusion Matrix
 # -------------------------------
 y_pred = model.predict(X_pad)
 y_pred_classes = y_pred.argmax(axis=1)
@@ -195,9 +195,8 @@ plt.ylabel('True Label')
 plt.title('Confusion Matrix')
 plt.show()
 
-
 # -------------------------------
-# Define a Function to Predict Sentiment for New Articles
+# Step 11: Define a Function to Predict Sentiment for New Articles
 # -------------------------------
 def predict_sentiment(text):
     seq = tokenizer.texts_to_sequences([text])
@@ -232,4 +231,3 @@ test_texts = [
 for i, text in enumerate(test_texts):
     sentiment = predict_sentiment(text)
     print(f"Test {i+1}: {text}\nPredicted Sentiment: {sentiment}\n")
-
